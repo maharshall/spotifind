@@ -1,3 +1,4 @@
+<!-- Alexander Marshall  -->
 <!DOCTYPE html>
 
 <html>
@@ -7,7 +8,19 @@
     </head>
     
     <body>
-        <h4>Nothing to see here!</h4>
-        <p>Try selecting some text and right-clicking!</p>
+        <h2>Spotifind</h2>
+        <h3 id="status">Status: Unauthorized</h3>
+        <button id="auth">Authorize</button>
+        <!-- <a href="localhost:8888/login" target ="_blank" id="auth">Authorize</a> -->
+
+        <p>Quick Add track number: 
+            <input type="number" id="track_number" min="1" max="20" value="2">
+        </p>
+        <p>Quick Add Playlist: 
+            <select id="playlists"></select>
+        </p>
+
+        <script src="js/jquery.min.js"></script>
+        <script src="js/popup.js"></script>
     </body>
 </html>
