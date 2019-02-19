@@ -1,0 +1,95 @@
+body {
+    background-color: #212121;
+}
+
+h2 {
+    color: #b3b3b3;
+    text-align: center;
+}
+
+.grid-container {
+    display: grid;
+    margin: auto;
+    width: 70%;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr ;
+    grid-template-areas: 
+        "album0 album1 album2" 
+        "album3 album4 album5" 
+        "album6 album7 album8" 
+        "album9 album10 album11";
+}
+
+.album {
+    display: none;
+    border: 3px solid #1db954;
+    padding: 5px;
+    margin: 5px;
+}
+
+.track {
+    display: none;
+}
+
+img {
+    float: left;
+    padding-right: 5px;
+}
+
+p {
+    line-height: 5%;
+    display: inline-block;
+    color: #b3b3b3;
+}
+
+.tag {
+    font-weight: bold;
+}
+
+#album1 {
+    grid-area: album1;
+}
+
+#album2 {
+    grid-area: album2;
+}
+
+#album3 {
+    grid-area: album3;
+}
+
+#album4 {
+    grid-area: album4;
+}
+
+#album5 {
+    grid-area: album5;
+}
+
+#album6 {
+    grid-area: album6;
+}
+
+#album7 {
+    grid-area: album7;
+}
+
+#album8 {
+    grid-area: album8;
+}
+
+#album9 {
+    grid-area: album9;
+}
+
+#album10 {
+    grid-area: album10;
+}
+
+#album11 {
+    grid-area: album11;
+}
+
+#album12 {
+    grid-area: album12;
+}

@@ -20,10 +20,12 @@
 
     "permissions": [
         "activeTab",
+        "tabs",
         "contextMenus",
         "identity",
         "storage",
-        "notifications"
+        "notifications",
+        "chrome-extension://*/detail.html"
     ],
 
     "icons": {

@@ -20,7 +20,7 @@ var generateRandomString = (length) => {
 }
 
 /**
- * Create a notification for the user
+ * Creates a basic Chrome notification
  * @param {string} message the message to be displayed
  */
 function createNotification(message) {
@@ -36,7 +36,6 @@ function createNotification(message) {
     );
 }
 
-// User has requested an access token
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(request.action === 'authorize') {
         var state = generateRandomString(16);
@@ -78,6 +77,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * @param {string} access_token the authenticated user's access token
  * @param {string} track_uri    the uri of the track to be added to the playlist
  * @param {string} track_name   the name of the track to be added to the playlist
+ * @param {bool}   notify       whether or not a notification should be shown
  */
 function addToPlaylist(access_token, track_uri, track_name, notify) {
     chrome.storage.local.get(null, (results) => {
@@ -90,7 +90,8 @@ function addToPlaylist(access_token, track_uri, track_name, notify) {
                 'Accept': 'application/json'
             },
             success: function(xhr) {
-                var message = `added track '${track_name}' to playlist '${results.playlist_name}'`; 
+                console.log(JSON.stringify(xhr));
+                var message = `Added track '${track_name}' to playlist '${results.playlist_name}'`; 
                 console.log(message);
                 if(notify) createNotification(message);
             },
@@ -101,8 +102,17 @@ function addToPlaylist(access_token, track_uri, track_name, notify) {
     })
 }
 
-function addMultipleToPlaylist(access_token, track_uris, track_names) {
+function addMultipleToPlaylist(access_token, track_data) {
+    var data = JSON.parse(track_data);
 
+    for(i in tracks) {
+        addToPlaylist(access_token, data.tracks[i].uri, data.tracks[i].name, false);
+    }
+
+    chrome.storage.local.get('playlist_name', (results) => {
+        var message = `Added multiple tracks to playlist ${data.playlist_name}`;
+        createNotification(message);
+    })
 }
 
 /**
@@ -110,7 +120,7 @@ function addMultipleToPlaylist(access_token, track_uris, track_names) {
  * @param {string} access_token the authenticated user's access token
  * @param {string} album_id     the id of the desired album
  */
-function getTrack(access_token, album_id) {
+function getTrack(access_token, album_id, album_name) {
     chrome.storage.local.get('track_number', (result) => {
         var track_number = Number(result.track_number);
         $.ajax({
@@ -123,10 +133,13 @@ function getTrack(access_token, album_id) {
                 offset: track_number-1
             },
             success: function(xhr) {
-                var track_uri = xhr.items[0].uri;
-                var track_name = xhr.items[0].name;
-    
-                addToPlaylist(access_token, track_uri, track_name, true);
+                if(xhr.items.length < 1) {
+                    createNotification(`Couldn't find track number ${track_number} on album '${album_name}'`);
+                } else {
+                    var track_uri = xhr.items[0].uri;
+                    var track_name = xhr.items[0].name;
+                    addToPlaylist(access_token, track_uri, track_name, true);
+                }
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
@@ -152,12 +165,66 @@ function findAlbum(access_token, query) {
             limit: 1
         },
         success: function(xhr) {
-            var album_id = xhr.albums.items[0].uri.replace('spotify:album:', '');
+            if(xhr.albums.items.length < 1) {
+                createNotification(`No Reults for '${query}'`);
+            } else {
+                var album_id = xhr.albums.items[0].uri.replace('spotify:album:', '');
+                var album_name = xhr.albums.items[0].name;
+                getTrack(access_token, album_id, album_name);
+            }
             
-            getTrack(access_token, album_id);
         },
         error: function(xhr) {
             console.error(xhr.responseText);
+            if(xhr.status === 401) {
+                alert('Your token has expired.\nPlease get a new one through the extension popup');
+            }
+        }
+    });
+}
+
+/**
+ * Find multiple albums on spotify based on user's query
+ * @param {string} access_token the authenticated user's access token
+ * @param {string} query        the string to search for
+ */
+function findAlbums(access_token, query) {
+    $.ajax({
+        url: 'https://api.spotify.com/v1/search',
+        headers: {
+            'Authorization': 'Bearer ' + access_token
+        },
+        data: {
+            q: query,
+            type: 'album',
+            limit: 12
+        },
+        success: function(xhr) {
+            if(xhr.albums.items.length < 1) {
+                createNotification(`No Reults for '${query}'`);
+            } else {
+                chrome.tabs.create({url: "detail.html"}, (tab) => {
+                    chrome.tabs.executeScript(tab.id, {file: "js/jquery.min.js"}, () => {
+                        chrome.tabs.executeScript(tab.id, {file: "js/detail.js"}, () => {
+                            chrome.tabs.sendMessage(tab.id, 
+                                {
+                                    action: 'albums',
+                                    data: JSON.stringify(xhr.albums.items)
+                                },
+                                (response) => {
+                                    console.log(response.status);
+                                });
+                        });
+                    });
+                });
+            }
+            
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
+            if(xhr.status === 401) {
+                alert('Your token has expired.\nPlease get a new one through the extension popup');
+            }
         }
     });
 }
@@ -170,7 +237,11 @@ chrome.contextMenus.create({
 
 chrome.contextMenus.onClicked.addListener((info) => {
     var query = info.selectionText;
-    chrome.storage.local.get('access_token', (results) => {
-        findAlbum(results.access_token, query);
+    chrome.storage.local.get(null, (results) => {
+        if(results.quick_add) {
+            findAlbum(results.access_token, query);
+        } else {
+            findAlbums(results.access_token, query);
+        }
     });
 });

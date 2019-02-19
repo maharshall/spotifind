@@ -10,7 +10,7 @@
         $('#track_number').val(Number(result.track_number));
         $('#playlists').val(result.playlist_id);
         $('#quick').prop('checked', result.quick_add);
-        if(!result.quick_add) toggleElements();
+        if(!result.quick_add) $('.quickadd').hide();
     });
 })();
 
@@ -50,7 +50,6 @@ $('#auth').click(() => {
                     $('#status').html('Status: Authorized');
                     $('#auth').toggle();
                     getPlaylists(result.access_token);
-                    $('#track_number').val(9);
                 } else {
                     $('#status').html('Status: No Token Provided');
                 }
@@ -62,13 +61,6 @@ $('#auth').click(() => {
     });
 });
 
-function toggleElements() {
-    $('#p1').toggle();
-    $('#p2').toggle();
-    $('#track_number').toggle();
-    $('#playlists').toggle();
-}
-
 $('#track_number').change(() => {
     chrome.storage.local.set({'track_number': $('#track_number').val()});
 });
@@ -79,7 +71,7 @@ $('#playlists').change(() => {
 });
 
 $('#quick').click(() => {
-    toggleElements();
+    $('.quickadd').toggle();
 
     chrome.storage.local.set({'quick_add': $('#quick').prop('checked')});
 });
