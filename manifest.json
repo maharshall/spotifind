@@ -18,17 +18,18 @@
         "default_icon": "icon.png"
     },
 
-
     "permissions": [
         "activeTab",
         "contextMenus",
-        "tabs",
         "identity",
-        "storage"
+        "storage",
+        "notifications"
     ],
 
     "icons": {
-        "16": "icon.png"
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
     },
     
     "key": "ehjifnpbboehdadjkgmgfmjlibbalald"

@@ -10,14 +10,18 @@
     <body>
         <h2>Spotifind</h2>
         <h3 id="status">Status: Unauthorized</h3>
-        <button id="auth">Authorize</button>
-        <!-- <a href="localhost:8888/login" target ="_blank" id="auth">Authorize</a> -->
+        <button id="auth" style="display: inline">Authorize</button>
 
-        <p>Quick Add track number: 
+        <hr>
+
+        <input type="checkbox" id="quick" checked> Use Quick Add
+        
+        <p id="p1">Quick Add track number: 
             <input type="number" id="track_number" min="1" max="20" value="2">
         </p>
-        <p>Quick Add Playlist: 
-            <select id="playlists"></select>
+        <p id="p2">Quick Add Playlist: 
+            <select id="playlists">
+            </select>
         </p>
 
         <script src="js/jquery.min.js"></script>
