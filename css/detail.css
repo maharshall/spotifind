@@ -25,10 +25,70 @@ h2 {
     border: 3px solid #1db954;
     padding: 5px;
     margin: 5px;
+    cursor: pointer;
+}
+
+.album:hover {
+    box-shadow: 0px 0px 21px 3px rgba(255,255,255,1);
+}
+
+.album .id {
+    display: none;
+}
+
+.songs {
+    display: none;
+    margin: auto;
+    width: 30%;
 }
 
 .track {
     display: none;
+    margin: 15px;
+}
+
+.track input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.track label {
+    font-size: 14pt;
+    color: #b3b3b3;
+    cursor: pointer;
+    padding-left: 30px;
+}
+
+.checkmark {
+    position: absolute;
+    height: 25px;
+    width: 25px;
+    background-color: #212121;
+}
+  
+.track:hover input ~ .checkmark:after {
+    border-right: solid rgba(29,185,84, 0.3);
+    border-bottom: solid rgba(29,185,84, 0.3);
+}
+  
+  /* Show the checkmark when checked */
+.track input:checked ~ .checkmark:after {
+    border-right: solid #1db954;
+    border-bottom: solid #1db954;
+}
+  
+  /* Style the checkmark/indicator */
+.track .checkmark:after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    transform: rotate(40deg);
 }
 
 img {
@@ -44,6 +104,10 @@ p {
 
 .tag {
     font-weight: bold;
+}
+
+#playlist_selector p {
+    font-size: 14pt;
 }
 
 #album1 {

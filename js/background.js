@@ -68,6 +68,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             chrome.storage.local.set({'access_token': access_token});
             sendResponse({code: 1});
         })
+    } else if(request.action === 'album_selection') {
+        var album_id = request.data;
+        chrome.storage.local.get('access_token', (results) => {
+            getAllTracks(results.access_token, album_id);
+        });
     }
     return true;
 });
@@ -97,6 +102,9 @@ function addToPlaylist(access_token, track_uri, track_name, notify) {
             },
             error: function(xhr) {
                 console.log(xhr.responseText);
+                if(xhr.status === 401) {
+                    alert('Your token has expired.\nPlease get a new one through the extension popup');
+                }
             }
         });
     })
@@ -143,8 +151,38 @@ function getTrack(access_token, album_id, album_name) {
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
+                if(xhr.status === 401) {
+                    alert('Your token has expired.\nPlease get a new one through the extension popup');
+                }
             }
         });
+    })
+}
+
+function getAllTracks(access_token, album_id) {
+    $.ajax({
+        url: 'https://api.spotify.com/v1/albums/'+album_id+'/tracks',
+        headers: {
+            'Authorization': 'Bearer ' + access_token
+        },
+        success: function(xhr) {
+            chrome.tabs.query({active: true}, (tabs) => {
+                chrome.tabs.sendMessage(tabs[0].id, 
+                    {
+                        action: 'track_data',
+                        data: JSON.stringify(xhr.items)  
+                    },
+                    (response) => {
+                        console.log(response);
+                });
+            });
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
+            if(xhr.status === 401) {
+                alert('Your token has expired.\nPlease get a new one through the extension popup');
+            }
+        }
     })
 }
 
