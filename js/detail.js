@@ -29,7 +29,7 @@ function fillTrackDetails(tracks) {
 
         $(`#track${i}`).show();
         $(`#track${i} label`).html((+i+1)+'. '+name);
-        $(`#tracks${i} p`).attr('id', uri);
+        $(`#track${i} input`).attr('name', uri);
     }
 }
 
@@ -41,9 +41,6 @@ function generateHandler(i) {
         chrome.extension.sendMessage({
             action: 'album_selection',
             data: $(`#album${i} .id`).html()
-        },
-        (response) => {
-
         });
     }
 }
@@ -93,4 +90,21 @@ $('#sel_all').click(() => {
 
 $('#sel_none').click(() => {
     $('input').prop('checked', false);
+})
+
+$('#go').click(() => {
+    var track_data = [];
+    $('input:checked:visible').each((index, element) => {
+        track_data.push(element.name);
+    });
+
+    chrome.extension.sendMessage({
+        action: 'track_data',
+        tracks: JSON.stringify(track_data),
+        playlist: JSON.stringify({
+            id: $('#playlists').val(),
+            name: $("#playlists option:selected").text()
+        })
+    });
+    window.close();
 })

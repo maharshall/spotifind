@@ -70,9 +70,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         })
     } else if(request.action === 'album_selection') {
         var album_id = request.data;
-        chrome.storage.local.get('access_token', (results) => {
-            getAllTracks(results.access_token, album_id);
+        chrome.storage.local.get('access_token', (result) => {
+            getAllTracks(result.access_token, album_id);
         });
+    } else if(request.action === 'track_data') {
+        var tracks = JSON.parse(request.tracks);
+        var playlist = JSON.parse(request.playlist);
+        chrome.storage.local.get('access_token', (result) => {
+            addMultipleToPlaylist(result.access_token, tracks, playlist);
+        })
     }
     return true;
 });
@@ -110,16 +116,25 @@ function addToPlaylist(access_token, track_uri, track_name, notify) {
     })
 }
 
-function addMultipleToPlaylist(access_token, track_data) {
-    var data = JSON.parse(track_data);
-
-    for(i in tracks) {
-        addToPlaylist(access_token, data.tracks[i].uri, data.tracks[i].name, false);
-    }
-
-    chrome.storage.local.get('playlist_name', (results) => {
-        var message = `Added multiple tracks to playlist ${data.playlist_name}`;
+function addMultipleToPlaylist(access_token, tracks, playlist) {
+    $.ajax({
+        type: 'POST',
+        url: 'https://api.spotify.com/v1/playlists/'+playlist.id+'/tracks?uris='+tracks.toString(),
+        headers: {
+            'Authorization': 'Bearer ' + access_token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        success: function(xhr) {
+            var message = `Added ${tracks.length} tracks to playlist '${playlist.name}'`;
         createNotification(message);
+        },
+        error: function(xhr) {
+            console.log(xhr.responseText);
+            if(xhr.status === 401) {
+                alert('Your token has expired.\nPlease get a new one through the extension popup');
+            }
+        }
     })
 }
 
