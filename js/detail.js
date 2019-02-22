@@ -106,5 +106,5 @@ $('#go').click(() => {
             name: $("#playlists option:selected").text()
         })
     });
-    window.close();
+    // window.close();
 })
