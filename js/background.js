@@ -18,22 +18,19 @@ var generateRandomString = (length) => {
 
     return text;
 }
-
 /**
- * Creates a basic Chrome notification
- * @param {string} message the message to be displayed
+ * Displays a toast notification in the user's current tab
+ * @param {string} message  the message to be displayed
+ * @param {string} image    the image to be displayed (pass null for no image)
  */
-function createNotification(message) {
-    chrome.notifications.create(
+function createToast(message, image) {
+    chrome.tabs.query({currentWindow: true, active: true}, (tabs) => {
+        chrome.tabs.sendMessage(tabs[0].id, 
         {
-            type: 'basic',
-            iconUrl: chrome.runtime.getURL('icon.png'),
-            title: 'Spotifind', 
-            message: message
-        }, () => {
-            console.log(chrome.runtime.lastError.message);
-        }
-    );
+            action: 'toast',
+            data: JSON.stringify({message: message, image: image})  
+        });  
+    });
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -90,7 +87,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * @param {string} track_name   the name of the track to be added to the playlist
  * @param {bool}   notify       whether or not a notification should be shown
  */
-function addToPlaylist(access_token, track_uri, track_name, notify) {
+function addToPlaylist(access_token, track_uri, track_name, image) {
     chrome.storage.local.get(null, (results) => {
         $.ajax({
             type: 'POST',
@@ -101,10 +98,7 @@ function addToPlaylist(access_token, track_uri, track_name, notify) {
                 'Accept': 'application/json'
             },
             success: function(xhr) {
-                console.log(JSON.stringify(xhr));
-                var message = `Added track '${track_name}' to playlist '${results.playlist_name}'`; 
-                console.log(message);
-                if(notify) createNotification(message);
+                createToast(`Added track '${track_name}' to playlist '${results.playlist_name}'`, image);
             },
             error: function(xhr) {
                 console.log(xhr.responseText);
@@ -126,8 +120,7 @@ function addMultipleToPlaylist(access_token, tracks, playlist) {
             'Accept': 'application/json'
         },
         success: function(xhr) {
-            var message = `Added ${tracks.length} tracks to playlist '${playlist.name}'`;
-        createNotification(message);
+            createToast(`Added ${tracks.length} tracks to playlist '${playlist.name}'`, null);
         },
         error: function(xhr) {
             console.log(xhr.responseText);
@@ -143,7 +136,7 @@ function addMultipleToPlaylist(access_token, tracks, playlist) {
  * @param {string} access_token the authenticated user's access token
  * @param {string} album_id     the id of the desired album
  */
-function getTrack(access_token, album_id, album_name) {
+function getTrack(access_token, album_id, album_name, image) {
     chrome.storage.local.get('track_number', (result) => {
         var track_number = Number(result.track_number);
         $.ajax({
@@ -157,11 +150,9 @@ function getTrack(access_token, album_id, album_name) {
             },
             success: function(xhr) {
                 if(xhr.items.length < 1) {
-                    createNotification(`Couldn't find track number ${track_number} on album '${album_name}'`);
+                    createToast(`Couldn't find track number ${track_number} on album '${album_name}'`, image);
                 } else {
-                    var track_uri = xhr.items[0].uri;
-                    var track_name = xhr.items[0].name;
-                    addToPlaylist(access_token, track_uri, track_name, true);
+                    addToPlaylist(access_token, xhr.items[0].uri, xhr.items[0].name, image);
                 }
             },
             error: function(xhr) {
@@ -219,11 +210,12 @@ function findAlbum(access_token, query) {
         },
         success: function(xhr) {
             if(xhr.albums.items.length < 1) {
-                createNotification(`No Reults for '${query}'`);
+                createToast(`No Reults for '${query}'`, null);
             } else {
                 var album_id = xhr.albums.items[0].uri.replace('spotify:album:', '');
                 var album_name = xhr.albums.items[0].name;
-                getTrack(access_token, album_id, album_name);
+                var image = xhr.albums.items[0].images[0].url;
+                getTrack(access_token, album_id, album_name, image);
             }
             
         },
@@ -254,7 +246,7 @@ function findAlbums(access_token, query) {
         },
         success: function(xhr) {
             if(xhr.albums.items.length < 1) {
-                createNotification(`No Reults for '${query}'`);
+                createToast(`No Reults for '${query}'`, null);
             } else {
                 chrome.tabs.create({url: "detail.html"}, (tab) => {
                     chrome.tabs.executeScript(tab.id, {file: "js/jquery.min.js"}, () => {
