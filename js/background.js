@@ -1,7 +1,7 @@
 // Alexander Marshall
 
 const redirect_uri = chrome.identity.getRedirectURL('oauth2');
-const client_id = 'redacted';
+const client_id = 'redact';
 
 /**
  * Generates a random string containing numbers and letters
@@ -65,11 +65,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             chrome.storage.local.set({'access_token': access_token});
             sendResponse({code: 1});
         })
+
     } else if(request.action === 'album_selection') {
         var album_id = request.data;
         chrome.storage.local.get('access_token', (result) => {
             getAllTracks(result.access_token, album_id);
         });
+
     } else if(request.action === 'track_data') {
         var tracks = JSON.parse(request.tracks);
         var playlist = JSON.parse(request.playlist);
@@ -77,6 +79,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             addMultipleToPlaylist(result.access_token, tracks, playlist);
         })
     }
+
     return true;
 });
 
@@ -85,7 +88,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * @param {string} access_token the authenticated user's access token
  * @param {string} track_uri    the uri of the track to be added to the playlist
  * @param {string} track_name   the name of the track to be added to the playlist
- * @param {bool}   notify       whether or not a notification should be shown
  */
 function addToPlaylist(access_token, track_uri, track_name, image) {
     chrome.storage.local.get(null, (results) => {
@@ -233,7 +235,7 @@ function findAlbum(access_token, query) {
  * @param {string} access_token the authenticated user's access token
  * @param {string} query        the string to search for
  */
-function findAlbums(access_token, query) {
+function getAlbums(access_token, query) {
     $.ajax({
         url: 'https://api.spotify.com/v1/search',
         headers: {
@@ -248,18 +250,14 @@ function findAlbums(access_token, query) {
             if(xhr.albums.items.length < 1) {
                 createToast(`No Reults for '${query}'`, null);
             } else {
-                chrome.tabs.create({url: "detail.html"}, (tab) => {
-                    chrome.tabs.executeScript(tab.id, {file: "js/jquery.min.js"}, () => {
-                        chrome.tabs.executeScript(tab.id, {file: "js/detail.js"}, () => {
-                            chrome.tabs.sendMessage(tab.id, 
-                                {
-                                    action: 'albums',
-                                    data: JSON.stringify(xhr.albums.items)
-                                },
-                                (response) => {
-                                    console.log(response.status);
-                                });
-                        });
+                chrome.tabs.query({currentWindow: true, active: true}, (tabs) => {
+                    chrome.tabs.sendMessage(tabs[0].id, 
+                        {
+                            action: 'albums',
+                            data: JSON.stringify(xhr.albums.items)  
+                        },
+                        (response) => {
+                            console.log(response);
                     });
                 });
             }
@@ -286,7 +284,7 @@ chrome.contextMenus.onClicked.addListener((info) => {
         if(results.quick_add) {
             findAlbum(results.access_token, query);
         } else {
-            findAlbums(results.access_token, query);
+            getAlbums(results.access_token, query);
         }
     });
 });
