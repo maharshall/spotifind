@@ -1,3 +1,11 @@
+(() => {
+    var style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.type = 'text/css';
+    style.href = chrome.extension.getURL('content.css');
+    (document.head||document.documentElement).appendChild(style);
+})();
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(request.action === 'toast') {
         var data = JSON.parse(request.data);
@@ -13,10 +21,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function createToast(message, image) {
-    $('body').append('<div id="spotifind_toast"></div>');
-    var toast = $('#spotifind_toast');
-    if(image) toast.append('<img src="'+image+'" width="100" height ="100">');
-    toast.append('<h3>Spotifind</h3>');
+    $('body').append('<div id="sf_toast"></div>');
+    var toast = $('#sf_toast');
+    if(image) toast.append('<img id="sf_toast_img" src="'+image+'" width="100" height ="100">');
+    toast.append('<h3 id="sf_toast_h3">Spotifind</h3>');
     toast.append(message);
 
     toast.addClass('show');
@@ -27,49 +35,58 @@ function createToast(message, image) {
 }
 
 function fillTrackDetails(tracks) {
-    var body = $('.spotifind_overlay #body');
-    body.append(`
-    <div class="songs">
-        <button id="sel_all">Select All</button> <button id="sel_none">Select None</button>
-    </div>`);
+    var body = $('#sf_body');
+    body.prepend('<button id="sf_back">Back</button>');
+    backHandler();
+    body.append(`<div class="sf_songs"></div>`);
 
     for(i in tracks) {
-        $('#body .songs').append(`
-        <div class="track" id="track${i}">
-            <input type="checkbox" id="cbox${i}"> 
+        $('.sf_songs').append(`
+        <div class="sf_track" id="sf_track${i}">
+            <input type="checkbox" id="sf_cbox${i}"> 
             <span class="checkmark"></span>
-            <label for="cbox${i}"></label> <br>
+            <label for="sf_cbox${i}"></label> <br>
         </div>`);
 
         var name = tracks[i].name;
         var uri = tracks[i].uri;
 
-        $(`#track${i}`).show();
-        $(`#track${i} label`).html((+i+1)+'. '+name);
-        $(`#track${i} input`).attr('name', uri);
+        $(`#sf_track${i}`).show();
+        $(`#sf_track${i} label`).html((+i+1)+'. '+name);
+        $(`#sf_track${i} input`).attr('name', uri);
     }
 
-    $('#body .songs').append(`
-    <div id="playlist_selector">
-        <p id="playlist">Add to playlist: 
-            <select id="playlists">
+    body.append(`
+    <div id="sf_playlist_selector">
+        <p id="sf_playlist">Add to playlist: 
+            <select id="sf_playlists">
             </select>
         </p>
-        <button id="go">Go >></button>
+        <button id="sf_sel_all">Select All</button> <button id="sf_sel_none">Select None</button>
+        <button id="sf_go">Go >></button>
     </div>`);
+    selectAllHandler();
+    selectNoneHandler();
+    goHandler();
 }
 
 function fillAlbumDetails(albums) {
     $('body').append(`
-    <div class="spotifind_overlay">
-        <div id="body">
-            <p id="x">\u008E</p>
+    <div class="sf_overlay">
+        <div id="sf_body">
+            <p id="sf_close">\u008E</p>
         </div>
     </div>`);
 
-    var body = $('.spotifind_overlay #body');
-    body.append('<h2>Which Album Were You Looking For?</h2>');
-    body.append('<div class="grid-container"></div>');
+    closeHandler();
+    $(document).keyup(function(e) {
+        // close overlay on Esc key
+        if (e.keyCode === 27) closeOverlay();
+    });
+
+    var body = $('#sf_body');
+    body.append('<h2 id="sf_h2">Which Album Were You Looking For?</h2>');
+    body.append('<div class="sf_grid-container"></div>');
 
     for(i in albums) {
         // get necessary info
@@ -81,37 +98,40 @@ function fillAlbumDetails(albums) {
         var id = albums[i].id;
 
         // create html
-        $('#body .grid-container').append(`
-        <div class ="album" id="album${i}">
+        $('.sf_grid-container').append(`
+        <div class ="sf_album" id="sf_album${i}">
             <img src="" width="123" height="123">
-            <p class="tag title">Title: </p>  <p class="value title"></p> <br>
-            <p class="tag artist">Artist: </p> <p class="value artist"></p> <br>
-            <p class="tag year">Year: </p>   <p class="value year"></p> <br>
-            <p class="tag tracks">Tracks: </p> <p class="value tracks"></p> <br>
-            <p class="id"></p>
+            <p class="sf_tag title">Title: </p>  <p class="sf_value title"></p> <br>
+            <p class="sf_tag artist">Artist: </p> <p class="sf_value artist"></p> <br>
+            <p class="sf_tag year">Year: </p>   <p class="sf_value year"></p> <br>
+            <p class="sf_tag tracks">Tracks: </p> <p class="sf_value tracks"></p> <br>
+            <p class="sf_id"></p>
         </div>`);
 
         // populate html
-        $(`#album${i}`).show();
-        $(`#album${i} .value.title`).html(title);
-        $(`#album${i} .value.artist`).html(artist);
-        $(`#album${i} .value.year`).html(year);
-        $(`#album${i} .value.tracks`).html(tracks);
-        $(`#album${i} img`).attr('src', art);
-        $(`#album${i} .id`).html(id);
+        $(`#sf_album${i}`).show();
+        $(`#sf_album${i} .sf_value.title`).html(title);
+        $(`#sf_album${i} .sf_value.artist`).html(artist);
+        $(`#sf_album${i} .sf_value.year`).html(year);
+        $(`#sf_album${i} .sf_value.tracks`).html(tracks);
+        $(`#sf_album${i} img`).attr('src', art);
+        $(`#sf_album${i} .sf_id`).html(id);
 
-        $(`#album${i}`).click(generateHandler(i));
+        $(`#sf_album${i}`).click(generateHandler(i));
     }
 }
 
 function generateHandler(i) {
     return function(event) {
-        $('#body .grid-container').hide();
-        $('h2').html($(`#album${i} .value.artist`).html()+' - '+$(`#album${i} .value.title`).html());
+        $('.sf_grid-container').hide();
+        $('#sf_h2').html($(`#sf_album${i} .sf_value.artist`).html()+' - '+$(`#sf_album${i} .sf_value.title`).html());
 
+        chrome.storage.local.set({'image': $(`#sf_album${i} img`).attr('src')});
+        $('.sf_overlay').prepend(`<img src="${$(`#sf_album${i} img`).attr('src')}`)
+        
         chrome.extension.sendMessage({
             action: 'album_selection',
-            data: $(`#album${i} .id`).html()
+            data: $(`#sf_album${i} .sf_id`).html()
         });
     }
 }
@@ -127,7 +147,8 @@ function getPlaylists(access_token) {
         },
         success: function(xhr) {
             for(i in xhr.items) {
-                $('#playlists').append('<option value="' + xhr.items[i].id + '">' + xhr.items[i].name + '</option>');
+                $('#sf_playlists').append('<option value="' + xhr.items[i].id + '">' 
+                + xhr.items[i].name + '</option>');
             }
         },
         error: function(xhr) {
@@ -139,34 +160,52 @@ function getPlaylists(access_token) {
     })
 }
 
-$('.spotifind_overlay #body #x').click(() => {
-    $('body .spotifind_overlay').hide();
-});
+function backHandler() {
+    $('#sf_back').click(() => {
+        $('.sf_songs').remove();
+        $('#sf_playlist_selector').remove();
+        $('.sf_grid-container').show();
+    })
+}
 
-$('.songs #sel_all').click(() => {
-    alert('select all');
-    $('input').prop('checked', true);
-})
-
-$('.songs #sel_none').click(() => {
-    $('input').prop('checked', false);
-})
-
-$('.songs .track #playlist_selector #go').click(() => {
-    alert('clicked')
-    var track_data = [];
-    $('.songs input:checked').each((index, element) => {
-        track_data.push(element.name);
+function closeHandler() {
+    $('#sf_close').click(() => {
+        closeOverlay();
     });
+}
 
-    chrome.extension.sendMessage({
-        action: 'track_data',
-        tracks: JSON.stringify(track_data),
-        playlist: JSON.stringify({
-            id: $('.songs #playlist_selector #playlists').val(),
-            name: $(".songs #playlist_selector #playlists option:selected").text()
-        })
+function selectAllHandler() {
+    $('#sf_sel_all').click(() => {
+        $('.sf_track input').prop('checked', true);
     });
+}
+
+function selectNoneHandler() {
+    $('#sf_sel_none').click(() => {
+        $('.sf_track input').prop('checked', false);
+    });
+}
+
+function goHandler() {
+    $('#sf_go').click(() => {
+        var track_data = [];
+        $('.sf_songs input:checked').each((index, element) => {
+            track_data.push(element.name);
+        });
     
-    $('body .spotifind_overlay').remove();
-})
+        chrome.extension.sendMessage({
+            action: 'track_data',
+            tracks: JSON.stringify(track_data),
+            playlist: JSON.stringify({
+                id: $('#sf_playlists').val(),
+                name: $('#sf_playlists option:selected').text()
+            })
+        });
+        
+        closeOverlay();
+    });
+}
+
+function closeOverlay() {
+    $('.sf_overlay').remove();
+}

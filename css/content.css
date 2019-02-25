@@ -1,76 +1,75 @@
 /*the toast notification*/
-#spotifind_toast {
+#sf_toast {
     visibility: hidden; /* Hidden by default*/
-    opacity: 0.7;
     width: 600px;
     height: 100px;
     margin-left: -300px;
     background-color: #212121;
     color: #b3b3b3;
     font-size: 13pt;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
     border-radius: 4px;
     padding: 16px;
     position: fixed;
-    z-index: 100;
+    z-index: 2147483647; /* max value lol */
     left: 50%;
     top: 30px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-  
-#spotifind_toast.show {
+
+#sf_toast.show {
     visibility: visible;
     -webkit-animation: fadein 0.5s, fadeout 0.5s 4.5s;
     animation: fadein 0.5s, fadeout 0.5s 4.5s;
 }
-  
+
 @-webkit-keyframes fadein {
-    from {top: 0; opacity: 0;} 
+    from {top: 0; opacity: 0;}
     to {top: 30px; opacity: 1;}
 }
-  
+
 @keyframes fadein {
     from {top: 0; opacity: 0;}
     to {top: 30px; opacity: 1;}
 }
-  
+
 @-webkit-keyframes fadeout {
-    from {top: 30px; opacity: 1;} 
+    from {top: 30px; opacity: 1;}
     to {top: 0; opacity: 0;}
 }
-  
+
 @keyframes fadeout {
     from {top: 30px; opacity: 1;}
     to {top: 0; opacity: 0;}
 }
 
-#spotifind_toast img {
+#sf_toast_img {
     float: left;
     padding-right: 16px;
 }
 
-#spotifind_toast h3 {
+#sf_toast_h3 {
     color: #1db954;
     font-size: 16pt;
     line-height: 50px;
 }
 
-.spotifind_overlay {
+.sf_overlay {
     position: fixed; /* Sit on top of the page content */
     display: block; /* Hidden by default */
     width: 100%; /* Full width (cover the whole page) */
     height: 100%; /* Full height (cover the whole page) */
-    top: 0; 
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    font-family: 'Montserrat', sans-serif;
     background-color: rgba(0,0,0,0.7); /* Black background with opacity */
-    z-index: 100; /* Specify a stack order in case you're using a different order for other elements */
+    z-index: 2147483646; /* Specify a stack order in case you're using a different order for other elements */
 }
 
-.spotifind_overlay #body {
+#sf_body {
     position: fixed;
     display: block;
     margin: auto;
@@ -81,62 +80,97 @@
     left: 10%;
     right: 10%;
     background-color: #212121;
-    z-index: 101;
+    z-index: 2147483647;
 }
 
-.spotifind_overlay #x {
+#sf_back {
     position: fixed;
-    display: block;
-    color: #b3b3b3;
-    font-size: 16pt;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14pt;
     cursor: pointer;
     top: 11%;
-    right: 11%;
+    left: 10.5%;
+    
+    background-color: #212121;
+	border-radius:40px;
+	border:1px solid #1db954;
+	display:inline-block;
+	cursor:pointer;
+	color: #1db954;
+	padding:10px 20px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px black;
 }
 
-.spotifind_overlay h2 {
+#sf_close {
+    position: fixed;
+    display: block;
+    color: #1db954;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16pt;
+    cursor: pointer;
+    top: 9%;
+    right: 10.5%;
+
+    background-color: #212121;
+	border-radius:40px;
+	border:1px solid #1db954;
+	display:inline-block;
+	cursor:pointer;
+	padding:5px 15px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px black;
+}
+
+#sf_h2 {
     color: #b3b3b3;
     text-align: center;
+    font-family: 'Montserrat', sans-serif;
 }
 
-.spotifind_overlay .grid-container {
+.sf_grid-container {
     display: grid;
     margin: auto;
     width: 90%;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr 1fr ;
-    grid-template-areas: 
-        "album0 album1 album2" 
-        "album3 album4 album5" 
-        "album6 album7 album8" 
-        "album9 album10 album11";
+    overflow-y: auto;
+    max-height: 90%;
 }
 
-.spotifind_overlay .album {
+.sf_album {
     border: 3px solid #1db954;
     padding: 5px;
     margin: 5px;
     cursor: pointer;
 }
 
-.spotifind_overlay .album:hover {
+.sf_album:hover {
     box-shadow: 0px 0px 21px 3px rgba(255,255,255,1);
 }
 
-.spotifind_overlay .album .id {
+.sf_album .sf_id {
     display: none;
 }
 
-.spotifind_overlay .songs {
+.sf_songs {
     margin: auto;
-    width: 30%;
+    max-width: 100%;
+    max-height: 75%;
+    margin-left: 20%;
+    overflow-y: auto;
 }
 
-.spotifind_overlay .track {
+#sf_playlist_selector {
+    margin-left: 35%;
+}
+
+.sf_track {
     margin: 15px;
+    position: relative;
 }
 
-.spotifind_overlay .track input {
+.sf_track input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
@@ -144,33 +178,33 @@
     width: 0;
 }
 
-.spotifind_overlay .track label {
+.sf_track label {
     font-size: 14pt;
     color: #b3b3b3;
     cursor: pointer;
     padding-left: 30px;
 }
 
-.spotifind_overlay .checkmark {
+.sf_songs .checkmark {
     position: absolute;
     height: 25px;
     width: 25px;
     background-color: #212121;
 }
-  
-.spotifind_overlay .track:hover input ~ .checkmark:after {
+
+.sf_track:hover input ~ .checkmark:after {
     border-right: solid rgba(29,185,84, 0.3);
     border-bottom: solid rgba(29,185,84, 0.3);
 }
-  
+
   /* Show the checkmark when checked */
-.spotifind_overlay .track input:checked ~ .checkmark:after {
+.sf_track input:checked ~ .checkmark:after {
     border-right: solid #1db954;
     border-bottom: solid #1db954;
 }
-  
+
   /* Style the checkmark/indicator */
-.spotifind_overlay .track .checkmark:after {
+.sf_track .checkmark:after {
     content: "";
     position: absolute;
     left: 9px;
@@ -180,82 +214,99 @@
     transform: rotate(40deg);
 }
 
-.spotifind_overlay img {
+.sf_album img {
     float: left;
     padding-right: 5px;
 }
 
-.spotifind_overlay p {
+.sf_album p {
     line-height: 5%;
     display: inline-block;
     color: #b3b3b3;
 }
 
-.spotifind_overlay .tag {
+.sf_tag {
     font-weight: bold;
 }
 
-.spotifind_overlay #playlist_selector p {
+#sf_playlist {
     font-size: 13pt;
     color: #b3b3b3
 }
 
-#playlists {
+#sf_playlists {
     background-color: #212121;
     color: #b3b3b3;
     font-size: 13pt;
 }
 
-#playlists option {
+#sf_playlists option {
     background-color: #212121;
     color: #b3b3b3;
     font-size: 13pt;
 }
 
-.spotifind_overlay #album1 {
+#sf_sel_all, #sf_sel_none, #sf_go {
+	background-color: #212121;
+	border-radius:40px;
+	border:1px solid #1db954;
+	display:inline-block;
+	cursor:pointer;
+	color:#b3b3b3;
+	font-size:14px;
+	padding:16px 31px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px black;
+}
+
+#sf_sel_all:hover, #sf_sel_none:hover, #sf_go:hover, #sf_back:hover, #sf_close:hover {
+	background-color:#303030;
+}
+
+/* #sf_album1 {
     grid-area: album1;
 }
 
-.spotifind_overlay #album2 {
+#sf_album2 {
     grid-area: album2;
 }
 
-.spotifind_overlay #album3 {
+#sf_album3 {
     grid-area: album3;
 }
 
-.spotifind_overlay #album4 {
+#sf_album4 {
     grid-area: album4;
 }
 
-.spotifind_overlay #album5 {
+#sf_album5 {
     grid-area: album5;
 }
 
-.spotifind_overlay #album6 {
+#sf_album6 {
     grid-area: album6;
 }
 
-.spotifind_overlay #album7 {
+#sf_album7 {
     grid-area: album7;
 }
 
-.spotifind_overlay #album8 {
+#sf_album8 {
     grid-area: album8;
 }
 
-.spotifind_overlay #album9 {
+#sf_album9 {
     grid-area: album9;
 }
 
-.spotifind_overlay #album10 {
+#sf_album10 {
     grid-area: album10;
 }
 
-.spotifind_overlay #album11 {
+#sf_album11 {
     grid-area: album11;
 }
 
-.spotifind_overlay #album12 {
+#sf_album12 {
     grid-area: album12;
-}
+} */

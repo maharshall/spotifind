@@ -1,7 +1,8 @@
 // Alexander Marshall
 
 const redirect_uri = chrome.identity.getRedirectURL('oauth2');
-const client_id = 'redact';
+const client_id = 'redacted';
+const debug = true;
 
 /**
  * Generates a random string containing numbers and letters
@@ -24,6 +25,7 @@ var generateRandomString = (length) => {
  * @param {string} image    the image to be displayed (pass null for no image)
  */
 function createToast(message, image) {
+    if(!image) image = chrome.extension.getURL('icon.png')
     chrome.tabs.query({currentWindow: true, active: true}, (tabs) => {
         chrome.tabs.sendMessage(tabs[0].id, 
         {
@@ -100,13 +102,11 @@ function addToPlaylist(access_token, track_uri, track_name, image) {
                 'Accept': 'application/json'
             },
             success: function(xhr) {
-                createToast(`Added track '${track_name}' to playlist '${results.playlist_name}'`, image);
+                createToast(`Added '${track_name}' to playlist ${results.playlist_name}`, image);
             },
             error: function(xhr) {
                 console.log(xhr.responseText);
-                if(xhr.status === 401) {
-                    alert('Your token has expired.\nPlease get a new one through the extension popup');
-                }
+                handleError(xhr);
             }
         });
     })
@@ -122,13 +122,13 @@ function addMultipleToPlaylist(access_token, tracks, playlist) {
             'Accept': 'application/json'
         },
         success: function(xhr) {
-            createToast(`Added ${tracks.length} tracks to playlist '${playlist.name}'`, null);
+            chrome.storage.local.get('image', (result) => {
+                createToast(`Added ${tracks.length} track(s) to playlist ${playlist.name}`, result.image);
+            });
         },
         error: function(xhr) {
             console.log(xhr.responseText);
-            if(xhr.status === 401) {
-                alert('Your token has expired.\nPlease get a new one through the extension popup');
-            }
+            handleError(xhr);
         }
     })
 }
@@ -159,9 +159,7 @@ function getTrack(access_token, album_id, album_name, image) {
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
-                if(xhr.status === 401) {
-                    alert('Your token has expired.\nPlease get a new one through the extension popup');
-                }
+                handleError(xhr);
             }
         });
     })
@@ -172,6 +170,9 @@ function getAllTracks(access_token, album_id) {
         url: 'https://api.spotify.com/v1/albums/'+album_id+'/tracks',
         headers: {
             'Authorization': 'Bearer ' + access_token
+        },
+        data: {
+            limit: 50
         },
         success: function(xhr) {
             chrome.tabs.query({active: true}, (tabs) => {
@@ -187,9 +188,7 @@ function getAllTracks(access_token, album_id) {
         },
         error: function(xhr) {
             console.error(xhr.responseText);
-            if(xhr.status === 401) {
-                alert('Your token has expired.\nPlease get a new one through the extension popup');
-            }
+            handleError(xhr);
         }
     })
 }
@@ -223,9 +222,7 @@ function findAlbum(access_token, query) {
         },
         error: function(xhr) {
             console.error(xhr.responseText);
-            if(xhr.status === 401) {
-                alert('Your token has expired.\nPlease get a new one through the extension popup');
-            }
+            handleError(xhr);
         }
     });
 }
@@ -244,7 +241,7 @@ function getAlbums(access_token, query) {
         data: {
             q: query,
             type: 'album',
-            limit: 12
+            limit: 50
         },
         success: function(xhr) {
             if(xhr.albums.items.length < 1) {
@@ -265,18 +262,33 @@ function getAlbums(access_token, query) {
         },
         error: function(xhr) {
             console.error(xhr.responseText);
-            if(xhr.status === 401) {
-                alert('Your token has expired.\nPlease get a new one through the extension popup');
-            }
+            handleError(xhr);
         }
     });
 }
 
+function handleError(error) {
+    switch(error.status) {
+        case 401:
+            alert('Your token has expired.\nPlease get a new one through the extension popup');
+            break;
+        case 500:
+        case 502:
+        case 503:
+            alert('Something went wrong on the other end (Spotify). \nTry again later?');
+            break;
+        default:
+            if(debug) alert(error.responseText);
+            break;
+    }
+}
+
 chrome.contextMenus.create({
-    id: 'search',
+    id: 'spotifind',
     title: 'Spotifind \"%s\"',
     contexts: ["selection"]
 });
+
 
 chrome.contextMenus.onClicked.addListener((info) => {
     var query = info.selectionText;
