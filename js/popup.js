@@ -1,5 +1,6 @@
 // Alexander Marshall
 
+// fill out HTML with the data from Chrome storage
 (() => {
     chrome.storage.local.get(null, (result) => {
         if(result.access_token) {
@@ -14,6 +15,10 @@
     });
 })();
 
+/**
+ * Gets the user's playlists and fills the HTML select
+ * @param {string} access_token the authenticated user's access token
+ */
 function getPlaylists(access_token) {
     $.ajax({
         url: 'https://api.spotify.com/v1/me/playlists',
@@ -39,6 +44,10 @@ function getPlaylists(access_token) {
     })
 }
 
+/**
+ * Click listener for the 'authorize' button
+ * Sends message to backend and updates popup based on response
+ */
 $('#auth').click(() => {
     chrome.extension.sendMessage({
         action: 'authorize'
@@ -61,15 +70,18 @@ $('#auth').click(() => {
     });
 });
 
+// listen for changes in the quick add track number and update chrome storage
 $('#track_number').change(() => {
     chrome.storage.local.set({'track_number': $('#track_number').val()});
 });
 
+// listen for changes in playlist select and update chrome storage
 $('#playlists').change(() => {
     chrome.storage.local.set({'playlist_id': $('#playlists').val()});
     chrome.storage.local.set({'playlist_name': $("#playlists option:selected").text()})
 });
 
+// hide/show HTML elements based on quick add checkbox
 $('#quick').click(() => {
     $('.quickadd').toggle();
 

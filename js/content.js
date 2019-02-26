@@ -1,3 +1,4 @@
+// link the stylesheet as soon as the script is loaded
 (() => {
     var style = document.createElement('link');
     style.rel = 'stylesheet';
@@ -6,6 +7,7 @@
     (document.head||document.documentElement).appendChild(style);
 })();
 
+// listen for messages from the background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(request.action === 'toast') {
         var data = JSON.parse(request.data);
@@ -20,6 +22,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
+/**
+ * Creates a 'toast' notification at the top of the screen
+ * @param {string} message  the message for the notification
+ * @param {string} image    the image for the notification
+ */
 function createToast(message, image) {
     $('body').append('<div id="sf_toast"></div>');
     var toast = $('#sf_toast');
@@ -34,6 +41,68 @@ function createToast(message, image) {
     }, 5000);
 }
 
+/**
+ * Creates and populates the html elements for displaying albums
+ * @param {array[object]} albums an array of album objects, returned from the Spotify API
+ */
+function fillAlbumDetails(albums) {
+    $('body').append(`
+    <div class="sf_overlay">
+        <div id="sf_body">
+            <p id="sf_close">\u008E</p>
+        </div>
+    </div>`);
+
+    closeHandler();
+    $(document).keyup(function(e) {
+        // close overlay on Esc key
+        if (e.keyCode === 27) closeOverlay();
+    });
+
+    var body = $('#sf_body');
+    body.append('<h2 id="sf_h2">Which Album Were You Looking For?</h2>');
+    body.append('<div class="sf_grid-container"></div>');
+
+    for(i in albums) {
+        // get necessary info
+        var title = albums[i].name;
+        var artist = albums[i].artists[0].name;
+        var year = albums[i].release_date.slice(0, 4);
+        var tracks = albums[i].total_tracks;
+        var art = albums[i].images[0].url;
+        var id = albums[i].id;
+
+        // create html
+        $('.sf_grid-container').append(`
+        <div class ="sf_album" id="sf_album${i}">
+            <div class="sf_bg_image"></div>
+            <img src=${art} style="display: none;">
+            <p class="sf_tag title">Title: </p>  <p class="sf_value title"></p> <br>
+            <p class="sf_tag artist">Artist: </p> <p class="sf_value artist"></p> <br>
+            <p class="sf_tag year">Year: </p>   <p class="sf_value year"></p> <br>
+            <p class="sf_tag tracks">Tracks: </p> <p class="sf_value tracks"></p> <br>
+            <p class="sf_id"></p>
+        </div>`);
+
+        $(`#sf_album${i} .sf_bg_image`).css("background-image", "url("+art+")");
+
+        // populate html
+        $(`#sf_album${i}`).show();
+        $(`#sf_album${i} .sf_value.title`).html(title);
+        $(`#sf_album${i} .sf_value.artist`).html(artist);
+        $(`#sf_album${i} .sf_value.year`).html(year);
+        $(`#sf_album${i} .sf_value.tracks`).html(tracks);
+        $(`#sf_album${i} img`).attr('src', art);
+        $(`#sf_album${i} .sf_id`).html(id);
+
+        $(`#sf_album${i}`).click(generateHandler(i));
+    }
+}
+
+/**
+ * Creates and populates the html elements for the track information
+ * @param {array[object]} tracks an array of track objects, returned from the Spotify API   
+ */
 function fillTrackDetails(tracks) {
     var body = $('#sf_body');
     body.prepend('<button id="sf_back">Back</button>');
@@ -70,64 +139,18 @@ function fillTrackDetails(tracks) {
     goHandler();
 }
 
-function fillAlbumDetails(albums) {
-    $('body').append(`
-    <div class="sf_overlay">
-        <div id="sf_body">
-            <p id="sf_close">\u008E</p>
-        </div>
-    </div>`);
-
-    closeHandler();
-    $(document).keyup(function(e) {
-        // close overlay on Esc key
-        if (e.keyCode === 27) closeOverlay();
-    });
-
-    var body = $('#sf_body');
-    body.append('<h2 id="sf_h2">Which Album Were You Looking For?</h2>');
-    body.append('<div class="sf_grid-container"></div>');
-
-    for(i in albums) {
-        // get necessary info
-        var title = albums[i].name;
-        var artist = albums[i].artists[0].name;
-        var year = albums[i].release_date.slice(0, 4);
-        var tracks = albums[i].total_tracks;
-        var art = albums[i].images[0].url;
-        var id = albums[i].id;
-
-        // create html
-        $('.sf_grid-container').append(`
-        <div class ="sf_album" id="sf_album${i}">
-            <img src="" width="123" height="123">
-            <p class="sf_tag title">Title: </p>  <p class="sf_value title"></p> <br>
-            <p class="sf_tag artist">Artist: </p> <p class="sf_value artist"></p> <br>
-            <p class="sf_tag year">Year: </p>   <p class="sf_value year"></p> <br>
-            <p class="sf_tag tracks">Tracks: </p> <p class="sf_value tracks"></p> <br>
-            <p class="sf_id"></p>
-        </div>`);
-
-        // populate html
-        $(`#sf_album${i}`).show();
-        $(`#sf_album${i} .sf_value.title`).html(title);
-        $(`#sf_album${i} .sf_value.artist`).html(artist);
-        $(`#sf_album${i} .sf_value.year`).html(year);
-        $(`#sf_album${i} .sf_value.tracks`).html(tracks);
-        $(`#sf_album${i} img`).attr('src', art);
-        $(`#sf_album${i} .sf_id`).html(id);
-
-        $(`#sf_album${i}`).click(generateHandler(i));
-    }
-}
-
+/**
+ * After an album is selected, send album id to background script
+ * @param {number} i the number used to access the div 
+ */
 function generateHandler(i) {
     return function(event) {
         $('.sf_grid-container').hide();
-        $('#sf_h2').html($(`#sf_album${i} .sf_value.artist`).html()+' - '+$(`#sf_album${i} .sf_value.title`).html());
+        $('#sf_h2').html($(`#sf_album${i} .sf_value.artist`).html()+
+        ' - '+$(`#sf_album${i} .sf_value.title`).html());
 
         chrome.storage.local.set({'image': $(`#sf_album${i} img`).attr('src')});
-        $('.sf_overlay').prepend(`<img src="${$(`#sf_album${i} img`).attr('src')}`)
+        // $(`#sf_body_bg`).css("background-image", "url("+$(`#sf_album${i} img`).attr('src')+")");
         
         chrome.extension.sendMessage({
             action: 'album_selection',
@@ -136,6 +159,10 @@ function generateHandler(i) {
     }
 }
 
+/**
+ * Gets the user's playlists and fills the HTML select
+ * @param {string} access_token the authenticated user's access token
+ */
 function getPlaylists(access_token) {
     $.ajax({
         url: 'https://api.spotify.com/v1/me/playlists',
@@ -160,6 +187,9 @@ function getPlaylists(access_token) {
     })
 }
 
+/**
+ * Click listener for the 'back' button
+ */
 function backHandler() {
     $('#sf_back').click(() => {
         $('.sf_songs').remove();
@@ -168,24 +198,37 @@ function backHandler() {
     })
 }
 
+/**
+ * Click listener for the 'x' button
+ */
 function closeHandler() {
     $('#sf_close').click(() => {
         closeOverlay();
     });
 }
 
+/**
+ * Click listener for the 'select all' button
+ */
 function selectAllHandler() {
     $('#sf_sel_all').click(() => {
         $('.sf_track input').prop('checked', true);
     });
 }
 
+/**
+ * Click listener for the 'select none' button
+ */
 function selectNoneHandler() {
     $('#sf_sel_none').click(() => {
         $('.sf_track input').prop('checked', false);
     });
 }
 
+/**
+ * Click listener for the 'go' button.
+ * Sends an array of track uris to the background script
+ */
 function goHandler() {
     $('#sf_go').click(() => {
         var track_data = [];
@@ -206,6 +249,9 @@ function goHandler() {
     });
 }
 
+/**
+ * Removes the entire Spotifind overlay
+ */
 function closeOverlay() {
     $('.sf_overlay').remove();
 }

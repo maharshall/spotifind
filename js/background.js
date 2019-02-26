@@ -19,6 +19,7 @@ var generateRandomString = (length) => {
 
     return text;
 }
+
 /**
  * Displays a toast notification in the user's current tab
  * @param {string} message  the message to be displayed
@@ -35,7 +36,9 @@ function createToast(message, image) {
     });
 }
 
+// Handles messages from the popup and content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // user has requested authorization
     if(request.action === 'authorize') {
         var state = generateRandomString(16);
         var scope = 'playlist-read-private playlist-read-collaborative '+
@@ -68,12 +71,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({code: 1});
         })
 
+    // user has selected an album, get track information
     } else if(request.action === 'album_selection') {
         var album_id = request.data;
         chrome.storage.local.get('access_token', (result) => {
             getAllTracks(result.access_token, album_id);
         });
 
+    // user has selected some tracks to add to a playlist
     } else if(request.action === 'track_data') {
         var tracks = JSON.parse(request.tracks);
         var playlist = JSON.parse(request.playlist);
@@ -112,6 +117,12 @@ function addToPlaylist(access_token, track_uri, track_name, image) {
     })
 }
 
+/**
+ * Adds multiple tracks to the selected playlist
+ * @param {string} access_token     the authenticated user's access token
+ * @param {array[object]} tracks    an array of track uris 
+ * @param {object} playlist         an object containing the playlist id and name
+ */
 function addMultipleToPlaylist(access_token, tracks, playlist) {
     $.ajax({
         type: 'POST',
@@ -165,6 +176,11 @@ function getTrack(access_token, album_id, album_name, image) {
     })
 }
 
+/**
+ * Gets all the tracks of the selected album
+ * @param {string} access_token the authenticated user's access token
+ * @param {string} album_id     the id of the album to get tracks from
+ */
 function getAllTracks(access_token, album_id) {
     $.ajax({
         url: 'https://api.spotify.com/v1/albums/'+album_id+'/tracks',
@@ -267,6 +283,10 @@ function getAlbums(access_token, query) {
     });
 }
 
+/**
+ * Handles errors from ajax requests
+ * @param {object} error an object containing error information
+ */
 function handleError(error) {
     switch(error.status) {
         case 401:
@@ -283,13 +303,14 @@ function handleError(error) {
     }
 }
 
+// creates the context menu entry
 chrome.contextMenus.create({
     id: 'spotifind',
     title: 'Spotifind \"%s\"',
     contexts: ["selection"]
 });
 
-
+// Click listener for the context menu
 chrome.contextMenus.onClicked.addListener((info) => {
     var query = info.selectionText;
     chrome.storage.local.get(null, (results) => {
