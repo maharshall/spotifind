@@ -32,7 +32,7 @@ function createToast(message, image) {
     var toast = $('#sf_toast');
     if(image) toast.append('<img id="sf_toast_img" src="'+image+'" width="100" height ="100">');
     toast.append('<h3 id="sf_toast_h3">Spotifind</h3>');
-    toast.append(message);
+    toast.append(`<p id="sf_toast_message">${message}</p>`);
 
     toast.addClass('show');
     setTimeout(() => {
@@ -49,7 +49,7 @@ function fillAlbumDetails(albums) {
     $('body').append(`
     <div class="sf_overlay">
         <div id="sf_body">
-            <p id="sf_close">\u008E</p>
+            <button id="sf_close">Close</button>
         </div>
     </div>`);
 
@@ -195,6 +195,7 @@ function backHandler() {
         $('.sf_songs').remove();
         $('#sf_playlist_selector').remove();
         $('.sf_grid-container').show();
+        $('#sf_back').remove();
     })
 }
 

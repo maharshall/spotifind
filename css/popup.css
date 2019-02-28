@@ -1,6 +1,7 @@
 body {
-    min-width: 220px;
+    min-width: 300px;
     background-color: #212121;
+    font-size: 1em;
 }
 
 h2 {
@@ -12,10 +13,42 @@ h3 {
 }
 
 input {
-    color: #b3b3b3;
+    color: #1db954;
+    background-color: #212121;
 }
 
 p {
     color: #b3b3b3;
+}
+
+#qadd {
     display: inline;
+}
+
+#auth {
+    background-color: #212121;
+	border-radius: 40px;
+	border: 1px solid #1db954;
+	cursor: pointer;
+	color: #b3b3b3;
+	font-size: 1em;
+	padding: 10px 20px;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px black;
+}
+
+#auth:hover {
+    background-color:#303030;
+}
+
+#playlists {
+    background-color: #212121;
+    color: #b3b3b3;
+    font-size: 1.05em;
+}
+
+#playlists option {
+    background-color: #212121;
+    color: #b3b3b3;
+    font-size: 1.05em;
 }

@@ -26,7 +26,7 @@ var generateRandomString = (length) => {
  * @param {string} image    the image to be displayed (pass null for no image)
  */
 function createToast(message, image) {
-    if(!image) image = chrome.extension.getURL('icon.png')
+    if(!image) image = chrome.extension.getURL('icons/128.png')
     chrome.tabs.query({currentWindow: true, active: true}, (tabs) => {
         chrome.tabs.sendMessage(tabs[0].id, 
         {

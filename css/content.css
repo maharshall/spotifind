@@ -6,7 +6,7 @@
     margin-left: -300px;
     background-color: #212121;
     color: #b3b3b3;
-    font-size: 13pt;
+    font-size: 17px;
     border-radius: 5px;
     padding: 16px;
     position: fixed;
@@ -51,8 +51,20 @@
 
 #sf_toast_h3 {
     color: #1db954;
-    font-size: 16pt;
-    line-height: 50px;
+    font-size: 22px;
+    /* line-height: 50px; */
+
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+
+#sf_toast_message {
+    font-size: 19px;
+    color: #b3b3b3;
 }
 
 .sf_overlay {
@@ -64,7 +76,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    font-family: 'Montserrat', sans-serif;
+    font: 16px Arial,sans-serif;
     background-color: rgba(0,0,0,0.7);
     z-index: 2147483646;
     text-align: center;
@@ -85,48 +97,51 @@
 }
 
 #sf_back {
-    position: fixed;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 14pt;
+    position: absolute;
+    font-size: 17px;
     cursor: pointer;
-    top: 11%;
-    left: 10.5%;
+    top: 10px;
+    left: 10px;
     
     background-color: #212121;
-	border-radius:40px;
-	border:1px solid #1db954;
-	display:inline-block;
-	cursor:pointer;
+	border-radius: 40px;
+	border: 1px solid #1db954;
+	display: block;
+	cursor: pointer;
 	color: #1db954;
-	padding:10px 20px;
-	text-decoration:none;
-	text-shadow:0px 1px 0px black;
+	padding: 10px 20px;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px black;
 }
 
 #sf_close {
-    position: fixed;
+    position: absolute;
     display: block;
     color: #1db954;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 16pt;
+    font-size: 17px;
     cursor: pointer;
-    top: 9%;
-    right: 10.5%;
+    top: 10px;
+    right: 10px;
 
     background-color: #212121;
-	border-radius:50%;
-	border:1px solid #1db954;
-	display:inline-block;
-	cursor:pointer;
-	padding: 5px 15px;
-	text-decoration:none;
+	border-radius: 40px;
+	border: 1px solid #1db954;
+	padding: 10px 20px;
+	text-decoration: none;
 	text-shadow:0px 1px 0px black;
 }
 
 #sf_h2 {
     color: #b3b3b3;
     text-align: center;
-    font-family: 'Montserrat', sans-serif;
+
+    display: block;
+    font-size: 19px;
+    margin-top: 0.83em;
+    margin-bottom: 0.83em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
 }
 
 .sf_grid-container {
@@ -137,6 +152,7 @@
     /* grid-template-rows: 1fr 1fr 1fr 1fr ; */
     overflow-y: auto;
     max-height: 90%;
+    margin-top: 15px;
 }
 
 .sf_grid-container::-webkit-scrollbar-track {
@@ -162,9 +178,11 @@
 }
 
 .sf_album {
+    display: block;
     position: relative;
     border: 3px solid #1db954;
     border-radius: 4px;
+    font-size: 15px;
     padding: 5px;
     margin: 5px;
     cursor: pointer;
@@ -178,6 +196,7 @@
 }
 
 .sf_bg_image {
+    display: block;
     position: absolute;
     background-size: cover;
     background-position: 50% 50%;
@@ -189,7 +208,7 @@
 }
 
 .sf_album p {
-    font-size: 11pt;
+    font-size: 15px;
     color: #b3b3b3;
     text-shadow: 2px 2px 2px #000000;
 }
@@ -245,10 +264,12 @@
 }
 
 #sf_playlist_selector {
+    display: block;
     margin: auto;
 }
 
 .sf_track {
+    display: block;
     margin: 15px;
     position: relative;
     text-align: left;
@@ -263,7 +284,7 @@
 }
 
 .sf_track label {
-    font-size: 14pt;
+    font-size: 19px;
     color: #b3b3b3;
     cursor: pointer;
     padding-left: 30px;
@@ -309,86 +330,58 @@
 
 .sf_tag {
     font-weight: bold;
+    
+    display: block;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.sf_value {
+    display: block; 
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 #sf_playlist {
-    font-size: 13pt;
-    color: #b3b3b3
+    font-size: 17px;
+    color: #b3b3b3;
+
+    display: block;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 #sf_playlists {
     background-color: #212121;
     color: #b3b3b3;
-    font-size: 13pt;
+    font-size: 17px;
 }
 
 #sf_playlists option {
     background-color: #212121;
     color: #b3b3b3;
-    font-size: 13pt;
+    font-size: 17px;
 }
 
 #sf_sel_all, #sf_sel_none, #sf_go {
 	background-color: #212121;
-	border-radius:40px;
-	border:1px solid #1db954;
-	display:inline-block;
-	cursor:pointer;
-	color:#b3b3b3;
-	font-size:14px;
-	padding:16px 31px;
-	text-decoration:none;
-	text-shadow:0px 1px 0px black;
+	border-radius: 40px;
+	border: 1px solid #1db954;
+	display: inline-block;
+	cursor: pointer;
+	color: #b3b3b3;
+	font-size: 19px;
+	padding: 16px 31px;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px black;
 }
 
 #sf_sel_all:hover, #sf_sel_none:hover, #sf_go:hover, #sf_back:hover, #sf_close:hover {
 	background-color:#303030;
 }
-
-/* #sf_album1 {
-    grid-area: album1;
-}
-
-#sf_album2 {
-    grid-area: album2;
-}
-
-#sf_album3 {
-    grid-area: album3;
-}
-
-#sf_album4 {
-    grid-area: album4;
-}
-
-#sf_album5 {
-    grid-area: album5;
-}
-
-#sf_album6 {
-    grid-area: album6;
-}
-
-#sf_album7 {
-    grid-area: album7;
-}
-
-#sf_album8 {
-    grid-area: album8;
-}
-
-#sf_album9 {
-    grid-area: album9;
-}
-
-#sf_album10 {
-    grid-area: album10;
-}
-
-#sf_album11 {
-    grid-area: album11;
-}
-
-#sf_album12 {
-    grid-area: album12;
-} */
