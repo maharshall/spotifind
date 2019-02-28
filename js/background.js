@@ -298,7 +298,7 @@ function handleError(error) {
             alert('Something went wrong on the other end (Spotify). \nTry again later?');
             break;
         default:
-            if(debug) alert(error.responseText);
+            if(debug) alert(error.message);
             break;
     }
 }

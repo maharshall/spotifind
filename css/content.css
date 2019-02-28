@@ -8,7 +8,7 @@
     color: #b3b3b3;
     font-size: 17px;
     border-radius: 5px;
-    padding: 16px;
+    padding: 15px;
     position: fixed;
     z-index: 2147483647; /* max value lol */
     left: 50%;
@@ -94,6 +94,8 @@
     right: 10%;
     background-color: #212121;
     z-index: 2147483647;
+    border: 2px solid #1db954;
+    border-radius: 5px;
 }
 
 #sf_back {
@@ -149,7 +151,6 @@
     margin: auto;
     width: 91%;
     grid-template-columns: 1fr 1fr 1fr;
-    /* grid-template-rows: 1fr 1fr 1fr 1fr ; */
     overflow-y: auto;
     max-height: 90%;
     margin-top: 15px;
@@ -273,6 +274,7 @@
     margin: 15px;
     position: relative;
     text-align: left;
+    font-weight: 400;
 }
 
 .sf_track input {
@@ -288,6 +290,7 @@
     color: #b3b3b3;
     cursor: pointer;
     padding-left: 30px;
+    font-weight: 400;
 }
 
 .sf_songs .checkmark {

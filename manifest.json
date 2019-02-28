@@ -1,7 +1,7 @@
 {
     "name": "Spotifind",
     "author": "Alexander Marshall",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Search for albums on Spotify and add them to your playlists!",
     "manifest_version": 2,
 
@@ -15,7 +15,7 @@
 
     "browser_action": {
         "default_popup": "popup.html",
-        "default_icon": "icon.png"
+        "default_icon": "icons/128.png"
     },
 
     "content_scripts": [
@@ -52,8 +52,8 @@
 
     "web_accessible_resources": [
         "content.css",
-        "icon.png"
+        "icons/128.png"
     ],
 
-    "key": "mhplhdnacaflolbbahipdioccpimhban"
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArMu7S8t09VmLjddfyVYdH0D7cJ52aOHARyircbbVydml3euDeAobM+aTDu/EXSKz/jp/AiDY9lm4Uy8wQG0Uzv9UVrwZ/Zo6CLCXYMAgVuLamrAdTjFxSqgFrUIDRS4AKUA9P0PdToO1m4T9IZdxN+ZEWrwdAaARMyeJjYiTHrB9XLNlkad0D/LP04W3Fx8nFfeIpC3kX2qbPXNFlHEGEr/k6Z4UhwF/NBPxarx0ckfZMl6vYsTt7TBD4iJFvzg86qBNLxzLwglAk1CqvnqPDK5jOCMKR1wqkU/q1ioGFKhxFByCqv5WpcAZClOIhy7snT1th+48bQatcCUoDhab7QIDAQAB"
 }
