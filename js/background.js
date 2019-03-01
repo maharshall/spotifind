@@ -75,7 +75,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if(request.action === 'album_selection') {
         var album_id = request.data;
         chrome.storage.local.get('access_token', (result) => {
-            getAllTracks(result.access_token, album_id);
+            getAlbumTracks(result.access_token, album_id);
         });
 
     // user has selected some tracks to add to a playlist
@@ -85,6 +85,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.local.get('access_token', (result) => {
             addMultipleToPlaylist(result.access_token, tracks, playlist);
         })
+
+    // user has selected a track to add to a playlist
+    } else if(request.action === 'track_uri') {
+        chrome.storage.local.get('access_token', (result) => {
+            addToPlaylist(result.access_token, request.track_uri, request.track_name, 
+                        request.playlist_id, request.playlist_name, request.image);
+        })
     }
 
     return true;
@@ -92,29 +99,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 /**
  * Adds the selected track to the selected playlist
- * @param {string} access_token the authenticated user's access token
- * @param {string} track_uri    the uri of the track to be added to the playlist
- * @param {string} track_name   the name of the track to be added to the playlist
+ * @param {string} access_token  the authenticated user's access token
+ * @param {string} track_uri     the uri of the track to be added to the playlist
+ * @param {string} track_name    the name of the track to be added to the playlist
+ * @param {string} playlist_id   the id of the playlist to be added to
+ * @param {string} playlist_name the name of the playlist to be added to
+ * @param {string} image         the url of the image for the notification
  */
-function addToPlaylist(access_token, track_uri, track_name, image) {
-    chrome.storage.local.get(null, (results) => {
-        $.ajax({
-            type: 'POST',
-            url: 'https://api.spotify.com/v1/playlists/'+results.playlist_id+'/tracks?uris='+track_uri,
-            headers: {
-                'Authorization': 'Bearer ' + access_token,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            success: function(xhr) {
-                createToast(`Added '${track_name}' to playlist ${results.playlist_name}`, image);
-            },
-            error: function(xhr) {
-                console.log(xhr.responseText);
-                handleError(xhr);
-            }
-        });
-    })
+function addToPlaylist(access_token, track_uri, track_name, playlist_id, playlist_name, image) {
+    $.ajax({
+        type: 'POST',
+        url: 'https://api.spotify.com/v1/playlists/'+playlist_id+'/tracks?uris='+track_uri,
+        headers: {
+            'Authorization': 'Bearer ' + access_token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        success: function(xhr) {
+            createToast(`Added '${track_name}' to playlist ${playlist_name}`, image);
+        },
+        error: function(xhr) {
+            console.log(xhr.responseText);
+            handleError(xhr);
+        }
+    });
 }
 
 /**
@@ -145,43 +153,11 @@ function addMultipleToPlaylist(access_token, tracks, playlist) {
 }
 
 /**
- * Gets specific track of an album when using quick add
- * @param {string} access_token the authenticated user's access token
- * @param {string} album_id     the id of the desired album
- */
-function getTrack(access_token, album_id, album_name, image) {
-    chrome.storage.local.get('track_number', (result) => {
-        var track_number = Number(result.track_number);
-        $.ajax({
-            url: 'https://api.spotify.com/v1/albums/'+album_id+'/tracks',
-            headers: {
-                'Authorization': 'Bearer ' + access_token
-            },
-            data: {
-                limit: 1,
-                offset: track_number-1
-            },
-            success: function(xhr) {
-                if(xhr.items.length < 1) {
-                    createToast(`Couldn't find track number ${track_number} on album '${album_name}'`, image);
-                } else {
-                    addToPlaylist(access_token, xhr.items[0].uri, xhr.items[0].name, image);
-                }
-            },
-            error: function(xhr) {
-                console.error(xhr.responseText);
-                handleError(xhr);
-            }
-        });
-    })
-}
-
-/**
  * Gets all the tracks of the selected album
  * @param {string} access_token the authenticated user's access token
  * @param {string} album_id     the id of the album to get tracks from
  */
-function getAllTracks(access_token, album_id) {
+function getAlbumTracks(access_token, album_id) {
     $.ajax({
         url: 'https://api.spotify.com/v1/albums/'+album_id+'/tracks',
         headers: {
@@ -210,11 +186,11 @@ function getAllTracks(access_token, album_id) {
 }
 
 /**
- * Find an album on spotify based on user's query
+ * Find tracks on spotify based on user's query
  * @param {string} access_token the authenticated user's access token
  * @param {string} query        the string to search for
  */
-function findAlbum(access_token, query) {
+function getTracks(access_token, query) {
     $.ajax({
         url: 'https://api.spotify.com/v1/search',
         headers: {
@@ -222,17 +198,23 @@ function findAlbum(access_token, query) {
         },
         data: {
             q: query,
-            type: 'album',
-            limit: 1
+            type: 'track',
+            limit: 50
         },
         success: function(xhr) {
-            if(xhr.albums.items.length < 1) {
+            if(xhr.tracks.items.length < 1) {
                 createToast(`No Reults for '${query}'`, null);
             } else {
-                var album_id = xhr.albums.items[0].uri.replace('spotify:album:', '');
-                var album_name = xhr.albums.items[0].name;
-                var image = xhr.albums.items[0].images[0].url;
-                getTrack(access_token, album_id, album_name, image);
+                chrome.tabs.query({currentWindow: true, active: true}, (tabs) => {
+                    chrome.tabs.sendMessage(tabs[0].id, 
+                        {
+                            action: 'tracks',
+                            data: JSON.stringify(xhr.tracks.items)  
+                        },
+                        (response) => {
+                            console.log(response);
+                    });
+                });
             }
             
         },
@@ -292,13 +274,16 @@ function handleError(error) {
         case 401:
             alert('Your token has expired.\nPlease get a new one through the extension popup');
             break;
+        case 403:
+            alert(error.responseJSON.error.message);
+            break;
         case 500:
         case 502:
         case 503:
             alert('Something went wrong on the other end (Spotify). \nTry again later?');
             break;
         default:
-            if(debug) alert(error.message);
+            if(debug) alert(error.responseJSON.error.message);
             break;
     }
 }
@@ -315,7 +300,7 @@ chrome.contextMenus.onClicked.addListener((info) => {
     var query = info.selectionText;
     chrome.storage.local.get(null, (results) => {
         if(results.quick_add) {
-            findAlbum(results.access_token, query);
+            getTracks(results.access_token, query);
         } else {
             getAlbums(results.access_token, query);
         }

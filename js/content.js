@@ -12,9 +12,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(request.action === 'toast') {
         var data = JSON.parse(request.data);
         createToast(data.message, data.image);
+
     } else if(request.action === 'albums') {
         fillAlbumDetails(JSON.parse(request.data));
+   
     } else if(request.action === 'track_data') {
+        fillAlbumTracks(JSON.parse(request.data));
+        chrome.storage.local.get('access_token', (result) => {
+            getPlaylists(result.access_token);
+        });
+   
+    } else if(request.action === 'tracks') {
         fillTrackDetails(JSON.parse(request.data));
         chrome.storage.local.get('access_token', (result) => {
             getPlaylists(result.access_token);
@@ -50,6 +58,7 @@ function fillAlbumDetails(albums) {
     <div class="sf_overlay">
         <div id="sf_body">
             <button id="sf_close">Close</button>
+            <br>
         </div>
     </div>`);
 
@@ -99,11 +108,106 @@ function fillAlbumDetails(albums) {
     }
 }
 
+function fillTrackDetails(tracks) {
+    var i = 0;
+    $('body').append(`
+    <div class="sf_overlay">
+        <div id="sf_track_body">
+            <button id="sf_close">Close</button>
+        </div>
+    </div>`);
+
+    closeHandler();
+    $(document).keyup(function(e) {
+        // close overlay on Esc key
+        if (e.keyCode === 27) closeOverlay();
+    });
+
+    var release_date = tracks[i].album.release_date;
+
+    var title = tracks[i].name;
+    var artist = tracks[i].album.artists[0].name;
+    var year = release_date.length > 4 ? release_date.slice(0, 4) : release_date;
+    var album = tracks[i].album.name;
+    var art = tracks[i].album.images[0].url;
+    var uri = tracks[i].uri;
+
+    var body = $('#sf_track_body');
+    body.append('<h2 id="sf_h2">Which Song Were You Looking For?</h2>');
+    body.append(`
+    <button id="sf_prev"> < </button>
+    <div class="sf_track_result">
+        <div class="sf_bg_image"></div>
+        <img src=${art} style="display: none;">
+        <p class="sf_tag title">Title: </p>  <p class="sf_value title">${title}</p> <br>
+        <p class="sf_tag artist">Artist: </p> <p class="sf_value artist">${artist}</p> <br>
+        <p class="sf_tag tracks">Album: </p> <p class="sf_value tracks">${album}</p> <br>
+        <p class="sf_tag year">Year: </p>   <p class="sf_value year">${year}</p> <br>
+        <p class="sf_id">${uri}</p>
+    </div>
+    <button id="sf_next"> > </button>
+    `);
+
+    $(`.sf_bg_image`).css("background-image", "url("+art+")");
+    $('#sf_prev').css('opacity', 0.3);
+    if(tracks.length == 1) {
+        $('#sf_next').css('opacity', 0.3);
+    }
+
+    body.append(`
+    <div id="sf_playlist_selector">
+        <p id="sf_playlist">Add to playlist: 
+            <select id="sf_playlists">
+            </select>
+        </p>
+        <button id="sf_go">add to playlist</button>
+    </div>`);
+    prevHandler();
+    nextHandler();
+    goTrackHandler();
+
+    $('#sf_next, #sf_prev').click((e) => {
+        console.log(e);
+        if(e.target.id == 'sf_prev') {
+            if (i > 0) i--;
+        } else if(e.target.id == 'sf_next') {
+            if (i < 50 && i < tracks.length) i++;
+        }
+
+        if(i == 0) {
+            $('#sf_prev').css('opacity', 0.3);
+        } else if(i == 50 || i == tracks.length-1) {
+            $('#sf_next').css('opacity', 0.3);
+        } else {
+            $('#sf_prev').css('opacity', 1);
+            $('#sf_next').css('opacity', 1);
+        }
+        
+        var release_date = tracks[i].album.release_date;
+
+        title = tracks[i].name;
+        artist = tracks[i].album.artists[0].name;
+        year = release_date.length > 4 ? release_date.slice(0, 4) : release_date;
+        album = tracks[i].album.name;
+        art = tracks[i].album.images[0].url;
+        uri = tracks[i].uri;
+
+        $('.sf_bg_image').css("background-image", "url("+art+")");
+        $('.sf_track_result img').attr('src', art);
+        $('.sf_value.title').html(title);
+        $('.sf_value.artist').html(artist);
+        $('.sf_value.tracks').html(album);
+        $('.sf_value.year').html(year);
+        $('.sf_id').html(uri);
+
+    })
+}
+
 /**
  * Creates and populates the html elements for the track information
  * @param {array[object]} tracks an array of track objects, returned from the Spotify API   
  */
-function fillTrackDetails(tracks) {
+function fillAlbumTracks(tracks) {
     var body = $('#sf_body');
     body.prepend('<button id="sf_back">Back</button>');
     backHandler();
@@ -227,7 +331,7 @@ function selectNoneHandler() {
 }
 
 /**
- * Click listener for the 'go' button.
+ * Click listener for the 'go' button on the album selection
  * Sends an array of track uris to the background script
  */
 function goHandler() {
@@ -244,6 +348,26 @@ function goHandler() {
                 id: $('#sf_playlists').val(),
                 name: $('#sf_playlists option:selected').text()
             })
+        });
+        
+        closeOverlay();
+    });
+}
+
+/**
+ * Click listener for the 'go' button on the track selection
+ * Sends an array of track uris to the background script
+ */
+function goTrackHandler() {
+    $('#sf_go').click(() => {
+    
+        chrome.extension.sendMessage({
+            action: 'track_uri',
+            track_uri: $('.sf_id').html(),
+            track_name: $('.sf_value').html(),
+            playlist_id: $('#sf_playlists').val(),
+            playlist_name: $('#sf_playlists option:selected').text(),
+            image: $('.sf_track_result img').attr('src')
         });
         
         closeOverlay();

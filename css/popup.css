@@ -17,8 +17,9 @@ input {
     background-color: #212121;
 }
 
-p {
+label {
     color: #b3b3b3;
+    cursor: pointer;
 }
 
 #qadd {
@@ -39,16 +40,4 @@ p {
 
 #auth:hover {
     background-color:#303030;
-}
-
-#playlists {
-    background-color: #212121;
-    color: #b3b3b3;
-    font-size: 1.05em;
-}
-
-#playlists option {
-    background-color: #212121;
-    color: #b3b3b3;
-    font-size: 1.05em;
 }

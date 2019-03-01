@@ -8,10 +8,10 @@
             $('#auth').toggle();
             getPlaylists(result.access_token);
         }
-        $('#track_number').val(Number(result.track_number));
-        $('#playlists').val(result.playlist_id);
+        // $('#track_number').val(Number(result.track_number));
+        // $('#playlists').val(result.playlist_id);
         $('#quick').prop('checked', result.quick_add);
-        if(!result.quick_add) $('.quickadd').hide();
+        // if(!result.quick_add) $('.quickadd').hide();
     });
 })();
 
@@ -68,17 +68,6 @@ $('#auth').click(() => {
             $('#status').html('Status: Errored');
         }
     });
-});
-
-// listen for changes in the quick add track number and update chrome storage
-$('#track_number').change(() => {
-    chrome.storage.local.set({'track_number': $('#track_number').val()});
-});
-
-// listen for changes in playlist select and update chrome storage
-$('#playlists').change(() => {
-    chrome.storage.local.set({'playlist_id': $('#playlists').val()});
-    chrome.storage.local.set({'playlist_name': $("#playlists option:selected").text()})
 });
 
 // hide/show HTML elements based on quick add checkbox
