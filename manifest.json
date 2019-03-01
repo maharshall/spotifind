@@ -1,7 +1,7 @@
 {
     "name": "Spotifind",
     "author": "Alexander Marshall",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Search for albums on Spotify and add them to your playlists!",
     "manifest_version": 2,
 

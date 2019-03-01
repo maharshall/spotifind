@@ -162,8 +162,6 @@ function fillTrackDetails(tracks) {
         </p>
         <button id="sf_go">add to playlist</button>
     </div>`);
-    prevHandler();
-    nextHandler();
     goTrackHandler();
 
     $('#sf_next, #sf_prev').click((e) => {
